@@ -2,7 +2,7 @@
 #set -x
 
 TOOL_NAME="Microsoft Office 2011 for Mac Removal Tool"
-TOOL_VERSION="1.1"
+TOOL_VERSION="1.2"
 
 ## Copyright (c) 2016 Microsoft Corp. All rights reserved.
 ## Scripts are not supported under any Microsoft standard support program or service. The scripts are provided AS IS without warranty of any kind.
@@ -32,6 +32,7 @@ TEXT_NORMAL='\033[0m'
 FORCE_PERM=false
 PRESERVE_DATA=true
 APP_RUNNING=false
+SAVE_LICENSE=false
 
 ## Path constants
 PATH_OFFICE2011="/Applications/Microsoft Office 2011"
@@ -68,7 +69,7 @@ function LogDevice {
 
 function ShowUsage {
 	LogMessage "In function 'ShowUsage'"
-	ConsoleMessage "Usage: $SCRIPT_NAME [--Force] [--Help]"
+	ConsoleMessage "Usage: $SCRIPT_NAME [--Force] [--Help] [--SaveLicense]"
 	ConsoleMessage "Use --Force to bypass warnings and forcibly remove Office 2011 applications and data"
 	ConsoleMessage ""
 }
@@ -109,6 +110,25 @@ function GetDestructiveDataPerm {
 	fi
 }
 
+function GetDestructiveLicensePerm {
+	LogMessage "In function 'GetDestructiveLicensePerm'"
+	if [ $FORCE_PERM = false ]; then
+		LogMessage "Script is not running with force - asking user for permission to remove license file"
+		if [ $SAVE_LICENSE = false ]; then
+			LogMessage "SAVE_LICENSE is false - asking user if they want to remove it"
+			ConsoleMessage "${TEXT_RED}This tool can either preserve or remove your product activation license.${TEXT_NORMAL}"
+			ConsoleMessage "Do you wish to preserve the license? (y/n)"
+			read -p "" "GOAHEAD"
+			if [ "$GOAHEAD" == "y" ] || [ "$GOAHEAD" == "Y" ]; then
+				LogMessage "User chose to preserve the license"
+				SAVE_LICENSE=true
+			else
+				LogMessage "User chose to remove the license"
+				SAVE_LICENSE=false
+			fi
+		fi
+	fi
+}
 function GetSudo {
 	LogMessage "In function 'GetSudo'"
 	if [ "$EUID" != "0" ]; then
@@ -339,6 +359,7 @@ function MainLoop {
 	# Show warning about destructive behavior of the script and ask for permission to continue
 	GetDestructivePerm
 	GetDestructiveDataPerm
+	GetDestructiveLicensePerm
 	# If appropriate, elevate permissions so the script can perform all actions
 	GetSudo
 	# Check to see if any of the 2011 apps are currently open
@@ -355,7 +376,10 @@ function MainLoop {
 	# Remove Office 2011 fonts
 	RemoveComponent "/Library/Fonts/Microsoft" "Office Fonts"
 	# Remove Office 2011 license
-	RemoveComponent "/Library/Preferences/com.microsoft.office.licensing.plist" "Product License"
+	if [ $SAVE_LICENSE = false ]; then
+		LogMessage "SAVE_LICENSE is false - removing license file"
+		RemoveComponent "/Library/Preferences/com.microsoft.office.licensing.plist" "Product License"
+	fi
 	# Remove Office 2011 application support
 	RemoveComponent "/Library/Application Support/Microsoft/MERP2.0" "Error Reporting"
 	RemoveComponent "$HOME/Library/Application Support/Microsoft/Office" "Application Support"
@@ -404,10 +428,16 @@ else
     	--Help|-h|--help)
     	ShowUsage
     	exit 0
+	shift # past argument
     	;;
     	--Force|-f|--force)
     	LogMessage "Force mode set to TRUE"
     	FORCE_PERM=true
+    	shift # past argument
+    	;;
+    	--SaveLicense|-s|--savelicense)
+    	LogMessage "SaveLicense set to TRUE"
+    	SAVE_LICENSE=true
     	shift # past argument
     	;;
     	*)
