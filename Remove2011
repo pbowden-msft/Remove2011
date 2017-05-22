@@ -2,9 +2,9 @@
 #set -x
 
 TOOL_NAME="Microsoft Office 2011 for Mac Removal Tool"
-TOOL_VERSION="1.2"
+TOOL_VERSION="1.3"
 
-## Copyright (c) 2016 Microsoft Corp. All rights reserved.
+## Copyright (c) 2017 Microsoft Corp. All rights reserved.
 ## Scripts are not supported under any Microsoft standard support program or service. The scripts are provided AS IS without warranty of any kind.
 ## Microsoft disclaims all implied warranties including, without limitation, any implied warranties of merchantability or of fitness for a 
 ## particular purpose. The entire risk arising out of the use or performance of the scripts and documentation remains with you. In no event shall
@@ -53,7 +53,9 @@ function ConsoleMessage {
 }
 
 function FormattedConsoleMessage {
-	printf "$1" "$2" >&3
+	FUNCDENT="$1"
+	FUNCTEXT="$2"
+	printf "$FUNCDENT" "$FUNCTEXT" >&3
 }
 
 function AllMessage {
@@ -146,10 +148,11 @@ function GetSudo {
 }
 
 function CheckRunning {
-	LogMessage "In function 'CheckRunning' with argument $1"
-	local RUNNING_RESULT=$(ps ax | grep -v grep | grep "$1")
+	FUNCPROC="$1"
+	LogMessage "In function 'CheckRunning' with argument $FUNCPROC"
+	local RUNNING_RESULT=$(ps ax | grep -v grep | grep "$FUNCPROC")
 	if [ "${#RUNNING_RESULT}" -gt 0 ]; then
-		LogMessage "$1 is currently running"
+		LogMessage "$FUNCPROC is currently running"
 		APP_RUNNING=true
 	fi
 }
@@ -188,8 +191,9 @@ function GetForcePerms {
 }
 
 function ForceTerminate {
-	LogMessage "In function 'ForceTerminate' with argument $1"
-	$(ps ax | grep -v grep | grep "$1" | awk '{print $1}' | xargs kill -9 2> /dev/null)
+	FUNCPROC="$1"
+	LogMessage "In function 'ForceTerminate' with argument $FUNCPROC"
+	$(ps ax | grep -v grep | grep "$FUNCPROC" | cut -d' ' -f1 | xargs kill -9 2> /dev/null)
 }
 
 function ForceQuit2011 {
@@ -204,41 +208,45 @@ function ForceQuit2011 {
 }
 
 function RemoveComponent {
-	LogMessage "In function 'RemoveComponent with arguments $1 and $2'"
-	FormattedConsoleMessage "%-55s" "Removing $2"
-	if [ -d "$1" ] || [ -e "$1" ] ; then
-		LogMessage "Removing path $1"
-		$(sudo rm -r -f "$1")
+	FUNCPATH="$1"
+	FUNCTEXT="$2"
+	LogMessage "In function 'RemoveComponent with arguments $FUNCPATH and $FUNCTEXT'"
+	FormattedConsoleMessage "%-55s" "Removing $FUNCTEXT"
+	if [ -d "$FUNCPATH" ] || [ -e "$FUNCPATH" ] ; then
+		LogMessage "Removing path $FUNCPATH"
+		$(sudo rm -r -f "$FUNCPATH")
 	else
-		LogMessage "$1 was not detected"
+		LogMessage "$FUNCPATH was not detected"
 		ConsoleMessage "${TEXT_YELLOW}Not detected${TEXT_NORMAL}"
 		return
 	fi
-	if [ -d "$1" ] || [ -e "$1" ] ; then
-		LogMessage "Path $1 still exists after deletion"
+	if [ -d "$FUNCPATH" ] || [ -e "$FUNCPATH" ] ; then
+		LogMessage "Path $FUNCPATH still exists after deletion"
 		ConsoleMessage "${TEXT_RED}Failed${TEXT_NORMAL}"
 	else
-		LogMessage "Path $1 was successfully removed"
+		LogMessage "Path $FUNCPATH was successfully removed"
 		ConsoleMessage "${TEXT_GREEN}Success${TEXT_NORMAL}"
 	fi
 }
 
 function PreserveComponent {
-	LogMessage "In function 'remove_PreserveComponent with arguments $1 and $2'"
-	FormattedConsoleMessage "%-55s" "Preserving $2"
-	if [ -d "$1" ] || [ -e "$1" ] ; then
-		LogMessage "Renaming path $1"
-		$(sudo mv -fv "$1" "$1-Preserved")
+	FUNCPATH="$1"
+	FUNCTEXT="$2"
+	LogMessage "In function 'remove_PreserveComponent with arguments $FUNCPATH and $FUNCTEXT'"
+	FormattedConsoleMessage "%-55s" "Preserving $FUNCTEXT"
+	if [ -d "$FUNCPATH" ] || [ -e "$FUNCPATH" ] ; then
+		LogMessage "Renaming path $FUNCPATH"
+		$(sudo mv -fv "$FUNCPATH" "$FUNCPATH-Preserved")
 	else
-		LogMessage "$1 was not detected"
+		LogMessage "$FUNCPATH was not detected"
 		ConsoleMessage "${TEXT_YELLOW}Not detected${TEXT_NORMAL}"
 		return
 	fi
-	if [ -d "$1" ] || [ -e "$1" ] ; then
-		LogMessage "Path $1 still exists after rename"
+	if [ -d "$FUNCPATH" ] || [ -e "$FUNCPATH" ] ; then
+		LogMessage "Path $FUNCPATH still exists after rename"
 		ConsoleMessage "${TEXT_RED}Failed${TEXT_NORMAL}"
 	else
-		LogMessage "Path $1 was successfully renamed"
+		LogMessage "Path $FUNCPATH was successfully renamed"
 		ConsoleMessage "${TEXT_GREEN}Success${TEXT_NORMAL}"
 	fi
 }
@@ -259,8 +267,9 @@ function Remove2011Receipts {
 }
 
 function RemoveReceipt {
-	LogMessage "In function 'RemoveReceipt' with argument $1"
-	PKGARRAY=($(pkgutil --pkgs=$1))
+	FUNCPATH="$1"
+	LogMessage "In function 'RemoveReceipt' with argument $FUNCPATH"
+	PKGARRAY=($(pkgutil --pkgs=$FUNCPATH))
 	for p in "${PKGARRAY[@]}"
 	do
 		LogMessage "Forgetting package $p"
@@ -310,16 +319,17 @@ function Remove2011Preferences {
 }
 
 function RemovePref {
-	LogMessage "In function 'RemovePref' with argument $1"
-	ls $1
+	FUNCPATH="$1"
+	LogMessage "In function 'RemovePref' with argument $FUNCPATH"
+	ls $FUNCPATH
 	if [ $? -eq 0 ] ; then
-		LogMessage "Found preference $1"
-		$(sudo rm -f $1)
+		LogMessage "Found preference $FUNCPATH"
+		$(sudo rm -f $FUNCPATH)
 		if [ $? -eq 0 ] ; then
-			LogMessage "Preference $1 removed"
+			LogMessage "Preference $FUNCPATH removed"
 			((PREFCOUNT++))
 		else
-			LogMessage "Preference $1 could NOT be removed"
+			LogMessage "Preference $FUNCPATH could NOT be removed"
 		fi
 	fi
 }
@@ -344,7 +354,7 @@ function CleanDock {
 function RelaunchCFPrefs {
 	LogMessage "In function 'RelaunchCFPrefs'"
 	FormattedConsoleMessage "%-55s" "Restarting Preferences Daemon"
-	sudo ps ax | grep -v grep | grep "cfprefsd" | awk '{print $1}' | xargs sudo kill -9
+	sudo ps ax | grep -v grep | grep "cfprefsd" | cut -d' ' -f1 | xargs sudo kill -9
 	if [ $? -eq 0 ] ; then
 		LogMessage "Successfully terminated all preferences daemons"
 		ConsoleMessage "${TEXT_GREEN}Success${TEXT_NORMAL}"
@@ -423,7 +433,7 @@ else
 	while [[ $# > 0 ]]
 	do
 	key="$1"
-	LogMessage "Argument: $1"
+	LogMessage "Argument: $key"
 	case $key in
     	--Help|-h|--help)
     	ShowUsage
