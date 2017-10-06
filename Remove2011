@@ -2,7 +2,7 @@
 #set -x
 
 TOOL_NAME="Microsoft Office 2011 for Mac Removal Tool"
-TOOL_VERSION="1.3"
+TOOL_VERSION="1.4"
 
 ## Copyright (c) 2017 Microsoft Corp. All rights reserved.
 ## Scripts are not supported under any Microsoft standard support program or service. The scripts are provided AS IS without warranty of any kind.
@@ -18,7 +18,7 @@ TOOL_VERSION="1.3"
 SCRIPT_NAME=$(basename "$0")
 WORKING_FOLDER=$(dirname "$0")
 LOG_FILE="$TMPDIR""$SCRIPT_NAME.log"
-touch $LOG_FILE
+touch "$LOG_FILE"
 exec 3>&1 1>>${LOG_FILE} 2>&1
 
 ## Formatting support
@@ -32,6 +32,7 @@ TEXT_NORMAL='\033[0m'
 FORCE_PERM=false
 PRESERVE_DATA=true
 APP_RUNNING=false
+KEEP_LYNC=false
 SAVE_LICENSE=false
 
 ## Path constants
@@ -71,7 +72,7 @@ function LogDevice {
 
 function ShowUsage {
 	LogMessage "In function 'ShowUsage'"
-	ConsoleMessage "Usage: $SCRIPT_NAME [--Force] [--Help] [--SaveLicense]"
+	ConsoleMessage "Usage: $SCRIPT_NAME [--Force] [--Help] [--KeepLync] [--SaveLicense]"
 	ConsoleMessage "Use --Force to bypass warnings and forcibly remove Office 2011 applications and data"
 	ConsoleMessage ""
 }
@@ -163,7 +164,9 @@ function CheckRunning2011 {
 	CheckRunning "$PATH_EXCEL2011" "Excel 2011"
 	CheckRunning "$PATH_PPT2011" "PowerPoint 2011"
 	CheckRunning "$PATH_OUTLOOK2011" "Outlook 2011"
-	CheckRunning "$PATH_LYNC2011" "Lync 2011"
+	if [ $KEEP_LYNC = false ]; then 
+		CheckRunning "$PATH_LYNC2011" "Lync 2011"
+	fi
 }
 
 function Close2011 {
@@ -204,7 +207,9 @@ function ForceQuit2011 {
 	ForceTerminate "$PATH_EXCEL2011" "Excel 2011"
 	ForceTerminate "$PATH_PPT2011" "PowerPoint 2011"
 	ForceTerminate "$PATH_OUTLOOK2011" "Outlook 2011"
-	ForceTerminate "$PATH_LYNC2011" "Lync 2011"
+	if [ $KEEP_LYNC = false ]; then 
+		ForceTerminate "$PATH_LYNC2011" "Lync 2011"
+	fi
 	ConsoleMessage "${TEXT_GREEN}Success${TEXT_NORMAL}"
 }
 
@@ -292,28 +297,32 @@ function Remove2011Preferences {
 	RemovePref "/Library/Preferences/com.microsoft.outlook.databasedaemon.plist"
 	RemovePref "/Library/Preferences/com.microsoft.DocumentConnection.plist"
 	RemovePref "/Library/Preferences/com.microsoft.office.setupassistant.plist"
-	RemovePref "$HOME/Library/Preferences/com.microsoft.Word.plist"
-	RemovePref "$HOME/Library/Preferences/com.microsoft.Excel.plist"
-	RemovePref "$HOME/Library/Preferences/com.microsoft.Powerpoint.plist"
-	RemovePref "$HOME/Library/Preferences/com.microsoft.Lync.plist"
-	RemovePref "$HOME/Library/Preferences/com.microsoft.Outlook.plist"
-	RemovePref "$HOME/Library/Preferences/com.microsoft.outlook.databasedaemon.plist"
-	RemovePref "$HOME/Library/Preferences/com.microsoft.outlook.office_reminders.plist"
-	RemovePref "$HOME/Library/Preferences/com.microsoft.DocumentConnection.plist"
-	RemovePref "$HOME/Library/Preferences/com.microsoft.office.setupassistant.plist"
-	RemovePref "$HOME/Library/Preferences/com.microsoft.office.plist"
-	RemovePref "$HOME/Library/Preferences/com.microsoft.error_reporting.plist"
-	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.Word.*.plist"
-	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.Excel.*.plist"
-	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.Powerpoint.*.plist"
-	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.Outlook.*.plist"
-	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.outlook.databasedaemon.*.plist"
-	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.DocumentConnection.*.plist"
-	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.office.setupassistant.*.plist"
-	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.registrationDB.*.plist"
-	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.e0Q*.*.plist"
-	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.Office365.*.plist"
-	RemovePref "$HOME/Library/Preferences/ByHost/MicrosoftLyncRegistrationDB.*.plist"
+	RemovePref "/Users/*/Library/Preferences/com.microsoft.Word.plist"
+	RemovePref "/Users/*/Library/Preferences/com.microsoft.Excel.plist"
+	RemovePref "/Users/*/Library/Preferences/com.microsoft.Powerpoint.plist"
+	if [ $KEEP_LYNC = false ]; then 
+		RemovePref "/Users/*/Library/Preferences/com.microsoft.Lync.plist"
+	fi
+	RemovePref "/Users/*/Library/Preferences/com.microsoft.Outlook.plist"
+	RemovePref "/Users/*/Library/Preferences/com.microsoft.outlook.databasedaemon.plist"
+	RemovePref "/Users/*/Library/Preferences/com.microsoft.outlook.office_reminders.plist"
+	RemovePref "/Users/*/Library/Preferences/com.microsoft.DocumentConnection.plist"
+	RemovePref "/Users/*/Library/Preferences/com.microsoft.office.setupassistant.plist"
+	RemovePref "/Users/*/Library/Preferences/com.microsoft.office.plist"
+	RemovePref "/Users/*/Library/Preferences/com.microsoft.error_reporting.plist"
+	RemovePref "/Users/*/Library/Preferences/ByHost/com.microsoft.Word.*.plist"
+	RemovePref "/Users/*/Library/Preferences/ByHost/com.microsoft.Excel.*.plist"
+	RemovePref "/Users/*/Library/Preferences/ByHost/com.microsoft.Powerpoint.*.plist"
+	RemovePref "/Users/*/Library/Preferences/ByHost/com.microsoft.Outlook.*.plist"
+	RemovePref "/Users/*/Library/Preferences/ByHost/com.microsoft.outlook.databasedaemon.*.plist"
+	RemovePref "/Users/*/Library/Preferences/ByHost/com.microsoft.DocumentConnection.*.plist"
+	RemovePref "/Users/*/Library/Preferences/ByHost/com.microsoft.office.setupassistant.*.plist"
+	RemovePref "/Users/*/Library/Preferences/ByHost/com.microsoft.registrationDB.*.plist"
+	RemovePref "/Users/*/Library/Preferences/ByHost/com.microsoft.e0Q*.*.plist"
+	RemovePref "/Users/*/Library/Preferences/ByHost/com.microsoft.Office365.*.plist"
+	if [ $KEEP_LYNC = false ]; then 
+		RemovePref "/Users/*/Library/Preferences/ByHost/MicrosoftLyncRegistrationDB.*.plist"
+	fi
 	if (( $PREFCOUNT > 0 )); then
 		ConsoleMessage "${TEXT_GREEN}Success${TEXT_NORMAL}"
 	else
@@ -346,7 +355,9 @@ function CleanDock {
 		sudo "$WORKING_FOLDER"/dockutil --remove "file:///Applications/Microsoft%20Office%202011/Microsoft%20Word.app/" --no-restart
 		sudo "$WORKING_FOLDER"/dockutil --remove "file:///Applications/Microsoft%20Office%202011/Microsoft%20Excel.app/" --no-restart
 		sudo "$WORKING_FOLDER"/dockutil --remove "file:///Applications/Microsoft%20Office%202011/Microsoft%20PowerPoint.app/" --no-restart
-		sudo "$WORKING_FOLDER"/dockutil --remove "file:///Applications/Microsoft%20Office%202011/Microsoft%20Lync.app/" --no-restart
+		if [ $KEEP_LYNC = false ]; then 
+			sudo "$WORKING_FOLDER"/dockutil --remove "file:///Applications/Microsoft%20Office%202011/Microsoft%20Lync.app/" --no-restart
+		fi
 		sudo "$WORKING_FOLDER"/dockutil --remove "file:///Applications/Microsoft%20Office%202011/Microsoft%20Outlook.app/"
 		LogMessage "Completed dock clean-up"
 		ConsoleMessage "${TEXT_GREEN}Success${TEXT_NORMAL}"
@@ -384,7 +395,9 @@ function MainLoop {
 	fi
 	# Remove Office 2011 apps
 	RemoveComponent "$PATH_OFFICE2011" "Office 2011 Applications"
-	RemoveComponent "$PATH_LYNC2011" "Lync"
+	if [ $KEEP_LYNC = false ]; then 
+		RemoveComponent "$PATH_LYNC2011" "Lync"
+	fi
 	
 	# Remove Office 2011 helpers
 	RemoveComponent "/Library/LaunchDaemons/com.microsoft.office.licensing.helper.plist" "Launch Daemon: Licensing Helper"
@@ -398,24 +411,24 @@ function MainLoop {
 	fi
 	# Remove Office 2011 application support
 	RemoveComponent "/Library/Application Support/Microsoft/MERP2.0" "Error Reporting"
-	RemoveComponent "$HOME/Library/Application Support/Microsoft/Office" "Application Support"
+	RemoveComponent "/Users/*/Library/Application Support/Microsoft/Office" "Application Support"
 	# Remove Office 2011 caches
-	RemoveComponent "$HOME/Library/Caches/com.microsoft.browserfont.cache" "Browser Font Cache"
-	RemoveComponent "$HOME/Library/Caches/com.microsoft.office.setupassistant" "Setup Assistant Cache"
-	RemoveComponent "$HOME/Library/Caches/Microsoft/Office" "Office Cache"
-	RemoveComponent "$HOME/Library/Caches/Outlook" "Outlook Identity Cache"
-	RemoveComponent "$HOME/Library/Caches/com.microsoft.Outlook" "Outlook Cache"
+	RemoveComponent "/Users/*/Library/Caches/com.microsoft.browserfont.cache" "Browser Font Cache"
+	RemoveComponent "/Users/*/Library/Caches/com.microsoft.office.setupassistant" "Setup Assistant Cache"
+	RemoveComponent "/Users/*/Library/Caches/Microsoft/Office" "Office Cache"
+	RemoveComponent "/Users/*/Library/Caches/Outlook" "Outlook Identity Cache"
+	RemoveComponent "/Users/*/Library/Caches/com.microsoft.Outlook" "Outlook Cache"
 	# Remove Office 2011 preferences
 	Remove2011Preferences
 	# Remove or rename Outlook 2011 identities and databases
 	if [ $PRESERVE_DATA = false ]; then
-		RemoveComponent "$HOME/Documents/Microsoft User Data/Office 2011 Identities" "Outlook Identities and Databases"
-		RemoveComponent "$HOME/Documents/Microsoft User Data/Saved Attachments" "Outlook Saved Attachments"
-		RemoveComponent "$HOME/Documents/Microsoft User Data/Outlook Sound Sets" "Outlook Sound Sets"
+		RemoveComponent "/Users/*/Documents/Microsoft User Data/Office 2011 Identities" "Outlook Identities and Databases"
+		RemoveComponent "/Users/*/Documents/Microsoft User Data/Saved Attachments" "Outlook Saved Attachments"
+		RemoveComponent "/Users/*/Documents/Microsoft User Data/Outlook Sound Sets" "Outlook Sound Sets"
 	else
-		PreserveComponent "$HOME/Documents/Microsoft User Data/Office 2011 Identities" "Outlook Identities and Databases"
-		PreserveComponent "$HOME/Documents/Microsoft User Data/Saved Attachments" "Outlook Saved Attachments"
-		PreserveComponent "$HOME/Documents/Microsoft User Data/Outlook Sound Sets" "Outlook Sound Sets"
+		PreserveComponent "/Users/*/Documents/Microsoft User Data/Office 2011 Identities" "Outlook Identities and Databases"
+		PreserveComponent "/Users/*/Documents/Microsoft User Data/Saved Attachments" "Outlook Saved Attachments"
+		PreserveComponent "/Users/*/Documents/Microsoft User Data/Outlook Sound Sets" "Outlook Sound Sets"
 	fi
 	# Remove Office 2011 package receipts
 	Remove2011Receipts
@@ -440,7 +453,7 @@ else
 	do
 	key="$1"
 	LogMessage "Argument: $key"
-	case $key in
+	case "$key" in
     	--Help|-h|--help)
     	ShowUsage
     	exit 0
@@ -451,6 +464,11 @@ else
     	FORCE_PERM=true
     	shift # past argument
     	;;
+    	--KeepLync|-k|--keeplync)
+    	LogMessage "Keep Lync set to TRUE"
+    	KEEP_LYNC=true
+    	shift # past argument
+    	;;
     	--SaveLicense|-s|--savelicense)
     	LogMessage "SaveLicense set to TRUE"
     	SAVE_LICENSE=true
@@ -458,7 +476,7 @@ else
     	;;
     	*)
     	ShowUsage
-    	exit 1
+    	echo "Ignoring unrecognized argument: $key"
     	;;
 	esac
 	shift # past argument or value
