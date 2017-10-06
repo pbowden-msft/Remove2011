@@ -163,6 +163,7 @@ function CheckRunning2011 {
 	CheckRunning "$PATH_EXCEL2011" "Excel 2011"
 	CheckRunning "$PATH_PPT2011" "PowerPoint 2011"
 	CheckRunning "$PATH_OUTLOOK2011" "Outlook 2011"
+	CheckRunning "$PATH_LYNC2011" "Lync 2011"
 }
 
 function Close2011 {
@@ -294,6 +295,7 @@ function Remove2011Preferences {
 	RemovePref "$HOME/Library/Preferences/com.microsoft.Word.plist"
 	RemovePref "$HOME/Library/Preferences/com.microsoft.Excel.plist"
 	RemovePref "$HOME/Library/Preferences/com.microsoft.Powerpoint.plist"
+	RemovePref "$HOME/Library/Preferences/com.microsoft.Lync.plist"
 	RemovePref "$HOME/Library/Preferences/com.microsoft.Outlook.plist"
 	RemovePref "$HOME/Library/Preferences/com.microsoft.outlook.databasedaemon.plist"
 	RemovePref "$HOME/Library/Preferences/com.microsoft.outlook.office_reminders.plist"
@@ -311,6 +313,7 @@ function Remove2011Preferences {
 	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.registrationDB.*.plist"
 	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.e0Q*.*.plist"
 	RemovePref "$HOME/Library/Preferences/ByHost/com.microsoft.Office365.*.plist"
+	RemovePref "$HOME/Library/Preferences/ByHost/MicrosoftLyncRegistrationDB.*.plist"
 	if (( $PREFCOUNT > 0 )); then
 		ConsoleMessage "${TEXT_GREEN}Success${TEXT_NORMAL}"
 	else
@@ -343,6 +346,7 @@ function CleanDock {
 		sudo "$WORKING_FOLDER"/dockutil --remove "file:///Applications/Microsoft%20Office%202011/Microsoft%20Word.app/" --no-restart
 		sudo "$WORKING_FOLDER"/dockutil --remove "file:///Applications/Microsoft%20Office%202011/Microsoft%20Excel.app/" --no-restart
 		sudo "$WORKING_FOLDER"/dockutil --remove "file:///Applications/Microsoft%20Office%202011/Microsoft%20PowerPoint.app/" --no-restart
+		sudo "$WORKING_FOLDER"/dockutil --remove "file:///Applications/Microsoft%20Office%202011/Microsoft%20Lync.app/" --no-restart
 		sudo "$WORKING_FOLDER"/dockutil --remove "file:///Applications/Microsoft%20Office%202011/Microsoft%20Outlook.app/"
 		LogMessage "Completed dock clean-up"
 		ConsoleMessage "${TEXT_GREEN}Success${TEXT_NORMAL}"
@@ -380,6 +384,8 @@ function MainLoop {
 	fi
 	# Remove Office 2011 apps
 	RemoveComponent "$PATH_OFFICE2011" "Office 2011 Applications"
+	RemoveComponent "$PATH_LYNC2011" "Lync"
+	
 	# Remove Office 2011 helpers
 	RemoveComponent "/Library/LaunchDaemons/com.microsoft.office.licensing.helper.plist" "Launch Daemon: Licensing Helper"
 	RemoveComponent "/Library/PrivilegedHelperTools/com.microsoft.office.licensing.helper" "Helper Tools: Licensing Helper"
