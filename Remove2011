@@ -2,9 +2,9 @@
 #set -x
 
 TOOL_NAME="Microsoft Office 2011 for Mac Removal Tool"
-TOOL_VERSION="1.5"
+TOOL_VERSION="1.6"
 
-## Copyright (c) 2017 Microsoft Corp. All rights reserved.
+## Copyright (c) 2019 Microsoft Corp. All rights reserved.
 ## Scripts are not supported under any Microsoft standard support program or service. The scripts are provided AS IS without warranty of any kind.
 ## Microsoft disclaims all implied warranties including, without limitation, any implied warranties of merchantability or of fitness for a 
 ## particular purpose. The entire risk arising out of the use or performance of the scripts and documentation remains with you. In no event shall
@@ -262,7 +262,7 @@ function PreserveUserComponent {
 
 function Remove2011Receipts {
 	LogMessage "In function 'Remove2011Receipts'"
-	FormattedConsoleMessage "%-55s" "Removing Package Receipts"
+	FormattedConsoleMessage "%-55s" "Removing Package Receipts. This can take several minutes"
 	RECEIPTCOUNT=0
 	RemoveReceipt "com.microsoft.office.all.*"
 	RemoveReceipt "com.microsoft.office.en.*"
@@ -424,6 +424,10 @@ function MainLoop {
 	fi
 	# Remove Office 2011 application support
 	RemoveComponent "/Library/Application Support/Microsoft/MERP2.0" "Error Reporting"
+	RemoveComponent "/Library/Application Support/Microsoft/HV1.0" "Help Viewer"
+	RemoveComponent "/Library/Application Support/Microsoft/Office Converter Support" "Converter Support"
+	RemoveComponent "/Library/Application Support/Microsoft/Silverlight" "Silverlight"
+	RemoveComponent "/Applications/Remote Desktop Connection.app" "Remote Desktop Connection"
 	RemoveUserComponent "Library/Application Support/Microsoft/Office" "Application Support"
 	# Remove Office 2011 caches
 	RemoveUserComponent "Library/Caches/com.microsoft.browserfont.cache" "Browser Font Cache"
